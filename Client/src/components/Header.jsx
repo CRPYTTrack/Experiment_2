@@ -47,17 +47,29 @@ const Header = ({ menu, toggleMenu, handleLogout }) => {
 							Dashboard
 						</NavLink>
 						<NavLink
-							 to="alerts"
-							className={({ isActive }) =>
-								`rounded-sm px-3 py-2 text-sm font-medium ${
-									isActive
-										? "bg-blue-200 text-blue-700 dark:bg-blue-700/20 dark:text-gray-100"
-										: "dark:text-gray-300 dark:hover:text-white dark:hover:bg-blue-500/10 text-gray-700 hover:bg-blue-50 hover:text-blue-700 cursor-pointer"
-								}`
-							}
+						to="watchlist"
+						className={({ isActive }) =>
+						`rounded-sm px-3 py-2 text-sm font-medium ${
+							isActive
+								? "bg-blue-200 text-blue-700 dark:bg-blue-700/20 dark:text-gray-100"
+								: "dark:text-gray-300 dark:hover:text-white dark:hover:bg-blue-500/10 text-gray-700 hover:bg-blue-50 hover:text-blue-700 cursor-pointer"
+						}`
+						}
 						>
-							Alerts
+						Watchlist
 						</NavLink>
+				<NavLink
+					 to="alerts"
+					className={({ isActive }) =>
+						`rounded-sm px-3 py-2 text-sm font-medium ${
+							isActive
+								? "bg-blue-200 text-blue-700 dark:bg-blue-700/20 dark:text-gray-100"
+								: "dark:text-gray-300 dark:hover:text-white dark:hover:bg-blue-500/10 text-gray-700 hover:bg-blue-50 hover:text-blue-700 cursor-pointer"
+						}`
+					}
+				>
+					Alerts
+				</NavLink>
 
 						<button
 							onClick={handleLogout}

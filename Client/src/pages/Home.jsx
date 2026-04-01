@@ -37,11 +37,7 @@ const Home = ({
 							Stay updated with real-time cryptocurrency prices
 							and track your portfolio.
 						</p>
-						<Searchbar
-							searchValue={search}
-							setSearchValue={setSearch}
-							placeholder="Search crypto.."
-						/>
+
 						<CoinGeckoAttribution />
 					</div>
 
