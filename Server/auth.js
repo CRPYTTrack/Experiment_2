@@ -3,20 +3,15 @@ const localStrategy = require("passport-local").Strategy;
 const JwtStrategy = require("passport-jwt").Strategy;
 const ExtractJwt = require("passport-jwt").ExtractJwt;
 const bcrypt = require("bcrypt");
-const supabase = require("./db");
+const db = require("./db");
 
 passport.use(
 	new localStrategy(async (username, password, done) => {
 		try {
-			const { data: user, error } = await supabase
-				.from("users")
-				.select("*")
-				.eq("username", username)
-				.maybeSingle();
+			const user = db
+				.prepare("SELECT id, username, password FROM users WHERE username = ?")
+				.get(username);
 
-			if (error) {
-				return done(error, false);
-			}
 			if (!user) {
 				return done(null, false, { message: "Username not found." });
 			}
@@ -41,13 +36,11 @@ passport.use(
 		},
 		async (payload, done) => {
 			try {
-				const { data: user, error } = await supabase
-					.from("users")
-					.select("*")
-					.eq("id", payload.id)
-					.single();
+				const user = db
+					.prepare("SELECT id, username, password FROM users WHERE id = ?")
+					.get(payload.id);
 
-				if (error || !user) {
+				if (!user) {
 					return done(null, false);
 				}
 				return done(null, user);

@@ -1,7 +1,7 @@
 const express = require("express");
 require("dotenv").config();
 const cors = require("cors");
-const supabase = require("./db");
+const db = require("./db");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const PORT = process.env.PORT || 3000;
@@ -26,16 +26,9 @@ app.post("/register", async (req, res) => {
 	const { username, password } = req.body;
 	try {
 		// Check if user already exists
-		const { data: existing, error: checkError } = await supabase
-			.from("users")
-			.select("id")
-			.eq("username", username)
-			.maybeSingle();
-
-		if (checkError) {
-			console.error("Check user error:", checkError);
-			throw checkError;
-		}
+		const existing = db
+			.prepare("SELECT id FROM users WHERE username = ?")
+			.get(username);
 
 		if (existing) {
 			return res.status(400).json({ Error: "User Already Exists" });
@@ -44,14 +37,10 @@ app.post("/register", async (req, res) => {
 		const salt = await bcrypt.genSalt(10);
 		const hashedPassword = await bcrypt.hash(password, salt);
 
-		const { error: insertError } = await supabase
-			.from("users")
-			.insert({ username, password: hashedPassword });
-
-		if (insertError) {
-			console.error("Insert user error:", insertError);
-			throw insertError;
-		}
+		db.prepare("INSERT INTO users (username, password) VALUES (?, ?)").run(
+			username,
+			hashedPassword
+		);
 
 		return res.status(200).json({ message: "User Registered Successfully" });
 	} catch (err) {
@@ -91,13 +80,9 @@ app.get(
 	async (req, res) => {
 		try {
 			const userId = req.user.id;
-
-			const { data, error } = await supabase
-				.from("watchlist")
-				.select("coin")
-				.eq("user_id", userId);
-
-			if (error) throw error;
+			const data = db
+				.prepare("SELECT coin FROM watchlist WHERE user_id = ?")
+				.all(userId);
 
 			return res.json({ watchlist: data.map((row) => row.coin) });
 		} catch (err) {
@@ -112,13 +97,11 @@ app.get(
 	async (req, res) => {
 		try {
 			const userId = req.user.id;
-
-			const { data, error } = await supabase
-				.from("portfolio")
-				.select("coin, total_investment, coins")
-				.eq("user_id", userId);
-
-			if (error) throw error;
+			const data = db
+				.prepare(
+					"SELECT coin, total_investment, coins FROM portfolio WHERE user_id = ?"
+				)
+				.all(userId);
 
 			// Convert to object map keyed by coin name
 			const portfolio = {};
@@ -143,18 +126,14 @@ app.put(
 		const userId = req.user.id;
 		const coin = req.body.coin;
 		try {
-			const { error } = await supabase
-				.from("watchlist")
-				.upsert({ user_id: userId, coin }, { onConflict: "user_id,coin" });
+			db.prepare("INSERT OR IGNORE INTO watchlist (user_id, coin) VALUES (?, ?)").run(
+				userId,
+				coin
+			);
 
-			if (error) throw error;
-
-			const { data, error: fetchError } = await supabase
-				.from("watchlist")
-				.select("coin")
-				.eq("user_id", userId);
-
-			if (fetchError) throw fetchError;
+			const data = db
+				.prepare("SELECT coin FROM watchlist WHERE user_id = ?")
+				.all(userId);
 
 			return res.status(200).json({ watchlist: data.map((row) => row.coin) });
 		} catch (err) {
@@ -170,20 +149,14 @@ app.put(
 		const userId = req.user.id;
 		const coin = req.body.coin;
 		try {
-			const { error } = await supabase
-				.from("watchlist")
-				.delete()
-				.eq("user_id", userId)
-				.eq("coin", coin);
+			db.prepare("DELETE FROM watchlist WHERE user_id = ? AND coin = ?").run(
+				userId,
+				coin
+			);
 
-			if (error) throw error;
-
-			const { data, error: fetchError } = await supabase
-				.from("watchlist")
-				.select("coin")
-				.eq("user_id", userId);
-
-			if (fetchError) throw fetchError;
+			const data = db
+				.prepare("SELECT coin FROM watchlist WHERE user_id = ?")
+				.all(userId);
 
 			return res.status(200).json({ watchlist: data.map((row) => row.coin) });
 		} catch (err) {
@@ -210,12 +183,11 @@ app.put(
 			}
 
 			// Get existing coin entry
-			const { data: existing } = await supabase
-				.from("portfolio")
-				.select("*")
-				.eq("user_id", userId)
-				.eq("coin", coin)
-				.maybeSingle();
+			const existing = db
+				.prepare(
+					"SELECT id, user_id, coin, total_investment, coins FROM portfolio WHERE user_id = ? AND coin = ?"
+				)
+				.get(userId, coin);
 
 			if (existing) {
 				const newCoins = existing.coins + coinData.coins;
@@ -231,13 +203,10 @@ app.put(
 
 				if (newCoins <= 0) {
 					// Remove coin from portfolio
-					const { error } = await supabase
-						.from("portfolio")
-						.delete()
-						.eq("user_id", userId)
-						.eq("coin", coin);
-
-					if (error) throw error;
+					db.prepare("DELETE FROM portfolio WHERE user_id = ? AND coin = ?").run(
+						userId,
+						coin
+					);
 				} else {
 					let newTotalInvestment;
 					if (coinData.coins < 0) {
@@ -247,13 +216,9 @@ app.put(
 						newTotalInvestment = existing.total_investment + coinData.totalInvestment;
 					}
 
-					const { error } = await supabase
-						.from("portfolio")
-						.update({ coins: newCoins, total_investment: newTotalInvestment })
-						.eq("user_id", userId)
-						.eq("coin", coin);
-
-					if (error) throw error;
+					db.prepare(
+						"UPDATE portfolio SET coins = ?, total_investment = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND coin = ?"
+					).run(newCoins, newTotalInvestment, userId, coin);
 				}
 			} else {
 				if (coinData.coins < 0) {
@@ -262,24 +227,18 @@ app.put(
 					});
 				}
 				if (coinData.totalInvestment > 0 && coinData.coins > 0) {
-					const { error } = await supabase.from("portfolio").insert({
-						user_id: userId,
-						coin,
-						total_investment: coinData.totalInvestment,
-						coins: coinData.coins,
-					});
-
-					if (error) throw error;
+					db.prepare(
+						"INSERT INTO portfolio (user_id, coin, total_investment, coins) VALUES (?, ?, ?, ?)"
+					).run(userId, coin, coinData.totalInvestment, coinData.coins);
 				}
 			}
 
 			// Return updated portfolio
-			const { data, error: fetchError } = await supabase
-				.from("portfolio")
-				.select("coin, total_investment, coins")
-				.eq("user_id", userId);
-
-			if (fetchError) throw fetchError;
+			const data = db
+				.prepare(
+					"SELECT coin, total_investment, coins FROM portfolio WHERE user_id = ?"
+				)
+				.all(userId);
 
 			const portfolio = {};
 			for (const row of data) {
@@ -305,13 +264,12 @@ app.get(
 	async (req, res) => {
 		try {
 			const userId = req.user.id;
-			const { data, error } = await supabase
-				.from("alerts")
-				.select("id, coin_id, coin_name, coin_image, target_price, condition, created_at")
-				.eq("user_id", userId)
-				.order("created_at", { ascending: false });
+			const data = db
+				.prepare(
+					"SELECT id, coin_id, coin_name, coin_image, target_price, condition, created_at FROM alerts WHERE user_id = ? ORDER BY created_at DESC"
+				)
+				.all(userId);
 
-			if (error) throw error;
 			return res.json({ alerts: data });
 		} catch (err) {
 			return res.status(500).json({ error: err.message });
@@ -338,20 +296,25 @@ app.post(
 				return res.status(400).json({ error: "Target price must be a positive number" });
 			}
 
-			const { data, error } = await supabase
-				.from("alerts")
-				.insert({
-					user_id: userId,
+			const insertResult = db
+				.prepare(
+					"INSERT INTO alerts (user_id, coin_id, coin_name, coin_image, target_price, condition) VALUES (?, ?, ?, ?, ?, ?)"
+				)
+				.run(
+					userId,
 					coin_id,
 					coin_name,
-					coin_image: coin_image || null,
-					target_price: parseFloat(target_price),
-					condition,
-				})
-				.select()
-				.single();
+					coin_image || null,
+					parseFloat(target_price),
+					condition
+				);
 
-			if (error) throw error;
+			const data = db
+				.prepare(
+					"SELECT id, coin_id, coin_name, coin_image, target_price, condition, created_at FROM alerts WHERE id = ? AND user_id = ?"
+				)
+				.get(insertResult.lastInsertRowid, userId);
+
 			return res.status(201).json({ alert: data });
 		} catch (err) {
 			return res.status(500).json({ error: err.message });
@@ -366,15 +329,10 @@ app.delete(
 	async (req, res) => {
 		try {
 			const userId = req.user.id;
-			const alertId = req.params.id;
+			const alertId = Number(req.params.id);
 
-			const { error } = await supabase
-				.from("alerts")
-				.delete()
-				.eq("id", alertId)
-				.eq("user_id", userId);
+			db.prepare("DELETE FROM alerts WHERE id = ? AND user_id = ?").run(alertId, userId);
 
-			if (error) throw error;
 			return res.json({ message: "Alert deleted successfully" });
 		} catch (err) {
 			return res.status(500).json({ error: err.message });
