@@ -1,5 +1,3 @@
-import StarOutlineIcon from "@mui/icons-material/StarOutline";
-import StarIcon from "@mui/icons-material/Star";
 import { useCurrency } from "../context/CurrencyContext";
 import { useAuth } from "../context/AuthContext";
 import getColor from "../utils/color";
@@ -42,22 +40,6 @@ const CoinRow = ({ coin, isStarred, toggleWatchlist, toggleForm }) => {
 			</td>
 			<td className="px-6 py-4">
 				<div className="flex items-center gap-2">
-					<button
-						className={`cursor-pointer ${
-							!isStarred
-								? "text-gray-400 hover:text-amber-300 transition-all duration-200"
-								: "text-amber-300"
-						}`}
-						onClick={() => {
-							if (isAuthenticated) {
-								toggleWatchlist(coin.id, coin.name);
-							} else {
-								toggleForm();
-							}
-						}}
-					>
-						{isStarred ? <StarIcon /> : <StarOutlineIcon />}
-					</button>
 					<button
 						className="px-3 py-1 bg-blue-600 text-white text-sm font-semibold rounded-md hover:bg-blue-700 transition-all duration-200 cursor-pointer"
 						onClick={() => {

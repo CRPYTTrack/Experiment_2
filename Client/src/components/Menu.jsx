@@ -39,18 +39,6 @@ const Menu = ({ handleLogout }) => {
 					>
 						Dashboard
 					</NavLink>
-					<NavLink
-					to="watchlist"
-					className={({ isActive }) =>
-					`p-2 w-full font-medium ${
-					isActive
-					? "bg-blue-200 text-blue-700 dark:bg-blue-800/50 dark:text-white"
-					: "hover:bg-blue-50 text-gray-700 dark:hover:bg-blue-600/10 dark:text-white"
-					}`
-					}
-					>
-					Watchlist
-					</NavLink>
 				<NavLink
 				to="alerts"
 				className={({ isActive }) =>

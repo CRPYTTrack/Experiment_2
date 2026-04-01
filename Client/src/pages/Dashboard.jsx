@@ -7,6 +7,9 @@ import TopCoins from "../components/TopCoins";
 import CoinGeckoAttribution from "../components/CoinGeckoAttribution";
 import { useCurrency } from "../context/CurrencyContext";
 import useCoins from "../hooks/useCoins";
+import useChart from "../hooks/useChart";
+import PieChartComponent from "../components/PieChartComponent";
+import BarChartComponent from "../components/BarChartComponent";
 
 const Dashboard = ({
 	watchlist,
@@ -22,6 +25,7 @@ const Dashboard = ({
 	const [action, setAction] = useState("");
 	const { currency, formatCurrency } = useCurrency();
 	const { coins, loading, error } = useCoins(portfolio);
+	const chart = useChart(portfolio, coins);
 
 	const handleToggleForm = (coin, actionType) => {
 		setAction(actionType);
@@ -71,12 +75,58 @@ const Dashboard = ({
 					</p>
 				</div>
 			</div>
-			<TopCoins
-				coins={coins}
-				loading={loading}
-				error={error}
-				portfolio={portfolio}
-			/>
+			<div className="max-w-9xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+				<div className="bg-white shadow-lg rounded-xl p-6 mt-8 dark:bg-gray-800">
+					<h2 className="text-xl font-semibold text-gray-500 mb-4 dark:text-white">
+						Portfolio Allocation
+					</h2>
+					<div className="w-full h-80">
+						{loading ? (
+							<div className="flex justify-center items-center h-full">
+								<p>Loading Chart...</p>
+							</div>
+						) : error ? (
+							<div className="flex justify-center items-center h-full text-red-500">
+								<p>{error}</p>
+							</div>
+						) : chart.length > 0 ? (
+							<PieChartComponent chart={chart} />
+						) : (
+							<div className="flex justify-center items-center h-full">
+								<p>No coins in portfolio to display.</p>
+							</div>
+						)}
+					</div>
+				</div>
+				<TopCoins
+					coins={coins}
+					loading={loading}
+					error={error}
+					portfolio={portfolio}
+				/>
+			</div>
+			<div className="bg-white shadow-lg rounded-xl p-6 mt-8 dark:bg-gray-800 ">
+				<h2 className="text-xl font-semibold text-gray-500 mb-4 dark:text-white">
+					Investment vs Current Value
+				</h2>
+				<div className="w-full h-96 overflow-x-auto ">
+					{loading ? (
+						<div className="flex justify-center items-center h-full">
+							<p>Loading Chart...</p>
+						</div>
+					) : error ? (
+						<div className="flex justify-center items-center h-full text-red-500">
+							<p>{error}</p>
+						</div>
+					) : chart.length > 0 ? (
+						<BarChartComponent chart={chart} />
+					) : (
+						<div className="flex justify-center items-center h-full">
+							<p>No data to display in chart.</p>
+						</div>
+					)}
+				</div>
+			</div>
 			<div className="mt-10 mx-auto overflow-x-auto [scrollbar-width:none]">
 				<PortfolioTable
 					loading={loading}
