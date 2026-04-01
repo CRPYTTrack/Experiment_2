@@ -65,3 +65,4 @@ export default function BarChartComponent({ chart }) {
 		</ResponsiveContainer>
 	);
 }
+ 

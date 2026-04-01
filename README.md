@@ -36,7 +36,7 @@ CryptoTrack is a web application that allows users to track real-time cryptocurr
 
 - **Frontend:** React, Tailwind CSS
 - **Backend:** Node.js, Express.js
-- **Database:** Supabase (PostgreSQL)
+- **Database:** SQLite (better-sqlite3)
 - **Authentication:** JWT, Passport.js
 - **APIs:** CoinGecko (crypto data), Frankfurter (currency conversion)
 - **Key Libraries:**
@@ -84,10 +84,11 @@ Downloadable portfolio report in CSV format.
 
 ## Documentation
 
-For a deeper dive into the technical details, API endpoints, and full setup, please refer to the following guides within the `docs/` directory:
+For a deeper dive into the technical details, API endpoints, and database configuration, please refer to the following guides within the `docs/` directory:
 - [System Architecture](./docs/architecture.md)
 - [API Reference](./docs/api-reference.md)
 - [Local Setup Guide](./docs/setup-guide.md)
+- [SQLite Database Configuration](./docs/sqlite-config.md)
 
 ## Getting Started
 
@@ -97,7 +98,6 @@ Follow these instructions to set up and run the project locally on your machine.
 
 - Node.js (v18 or later recommended)
 - Git
-- A [Supabase](https://supabase.com) account and project
 
 ### 1. Clone the Repository
 
@@ -106,56 +106,9 @@ git clone <REPO_CLONE_URL>
 cd <REPO_DIRECTORY>
 ```
 
-### 2. Supabase Setup
+### 2. Database Initialization
 
-1. Go to [supabase.com](https://supabase.com) and create a new project
-2. Open the **SQL Editor** in your project and run the following to create the required tables:
-
-```sql
-CREATE TABLE users (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  username TEXT UNIQUE NOT NULL,
-  password TEXT NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE TABLE watchlist (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  coin TEXT NOT NULL,
-  added_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE(user_id, coin)
-);
-
-CREATE TABLE portfolio (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  coin TEXT NOT NULL,
-  total_investment NUMERIC(20, 8) NOT NULL DEFAULT 0,
-  coins NUMERIC(20, 8) NOT NULL DEFAULT 0,
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE(user_id, coin)
-);
-
-CREATE TABLE alerts (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  coin_id TEXT NOT NULL,
-  coin_name TEXT NOT NULL,
-  coin_image TEXT,
-  target_price NUMERIC(20, 8) NOT NULL CHECK (target_price > 0),
-  condition TEXT NOT NULL CHECK (condition IN ('above', 'below')),
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX idx_users_username ON users(username);
-CREATE INDEX idx_watchlist_user_id ON watchlist(user_id);
-CREATE INDEX idx_portfolio_user_id ON portfolio(user_id);
-CREATE INDEX idx_portfolio_user_coin ON portfolio(user_id, coin);
-CREATE INDEX idx_alerts_user_id ON alerts(user_id);
-```
-
-3. Go to **Project Settings → API** and note down your **Project URL** and **service_role** secret key
+The SQLite database is automatically initialized on the first server startup. All required tables (`users`, `watchlist`, `portfolio`, and `alerts`) are created automatically with proper schema and constraints.
 
 ### 3. Backend Setup
 
@@ -171,8 +124,7 @@ npm install
 Create a `.env` file in the `Server` directory and add the following:
 
 ```env
-SUPABASE_URL="https://your-project-id.supabase.co"
-SUPABASE_SERVICE_ROLE_KEY="your-service-role-secret-key"
+DB_PATH="./data.sqlite"
 PORT=3000
 CLIENT="http://localhost:5173"
 JWT_SECRET="your-jwt-secret"
