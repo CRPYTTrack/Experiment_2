@@ -1,11 +1,9 @@
-import { useState } from "react";
 import Table from "../components/Table";
 import Form from "../components/Form";
 import LoginWarning from "../components/LoginWarning";
 import CoinGeckoAttribution from "../components/CoinGeckoAttribution";
 import { useAuth } from "../context/AuthContext";
 import useTopCoins from "../hooks/useTopCoins";
-import Searchbar from "../components/Searchbar";
 
 const Home = ({
 	watchlist,
@@ -17,13 +15,6 @@ const Home = ({
 }) => {
 	const { isAuthenticated } = useAuth();
 	const { coins, loading, error } = useTopCoins();
-	const [search, setSearch] = useState("");
-
-	const filteredCoins = coins.filter(
-		(coin) =>
-			coin.name.toLowerCase().includes(search.toLowerCase()) ||
-			coin.symbol.toLowerCase().includes(search.toLowerCase())
-	);
 
 	return (
 		<>
@@ -37,11 +28,6 @@ const Home = ({
 							Stay updated with real-time cryptocurrency prices
 							and track your portfolio.
 						</p>
-					<Searchbar
-						searchValue={search}
-						setSearchValue={setSearch}
-						placeholder="Search crypto.."
-					/>
 						<CoinGeckoAttribution />
 					</div>
 
@@ -49,7 +35,7 @@ const Home = ({
 						<Table
 							loading={loading}
 							error={error}
-							coins={filteredCoins}
+							coins={coins}
 							toggleWatchlist={toggleWatchlist}
 							watchlist={watchlist}
 							message={""}

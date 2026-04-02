@@ -1,7 +1,6 @@
 import PortfolioCoinRow from "./PortfolioCoinRow";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import CodeIcon from "@mui/icons-material/Code";
-import { useCurrency } from "../context/CurrencyContext";
 import downloadCSV from "../utils/downloadCSV.js";
 import downloadPDF from "../utils/downloadPDF.js";
 
@@ -17,7 +16,6 @@ const PortfolioTable = ({
 	totalInvestment,
 	currentValue,
 }) => {
-	const { currency, formatCurrency } = useCurrency();
 	return (
 		<div className="relative">
 			<div className="bg-white h-16 rounded-t-xl border border-gray-200 flex justify-between py-4 pl-4 sticky top-0 z-10 dark:bg-gray-800 dark:border-gray-700">
@@ -32,9 +30,7 @@ const PortfolioTable = ({
 								coins,
 								portfolio,
 								currentValue,
-								totalInvestment,
-								currency,
-								formatCurrency
+								totalInvestment
 							);
 						}}
 					>
@@ -44,7 +40,7 @@ const PortfolioTable = ({
 					<div
 						className="border border-gray-700 py-1 sm:py-2 text-xs sm:text-sm cursor-pointer rounded-md font-semibold text-gray-700 bg-gray-50 hover:bg-gray-100 px-1 sm:px-4 dark:bg-gray-900 dark:text-white dark:hover:bg-gray-950/5 transition-all duration-150"
 						onClick={() => {
-							downloadCSV(coins, portfolio, currency);
+							downloadCSV(coins, portfolio);
 						}}
 					>
 						<CodeIcon />

@@ -1,12 +1,13 @@
-import StarOutlineIcon from "@mui/icons-material/StarOutline";
-import StarIcon from "@mui/icons-material/Star";
-import { useCurrency } from "../context/CurrencyContext";
-import { useAuth } from "../context/AuthContext";
 import getColor from "../utils/color";
 
-const CoinRow = ({ coin, isStarred, toggleWatchlist, toggleForm }) => {
-	const { isAuthenticated } = useAuth();
-	const { currency, formatCurrency } = useCurrency();
+const CoinRow = ({ coin, toggleForm }) => {
+	const formatUsd = (value, max = 2) =>
+		new Intl.NumberFormat("en-US", {
+			style: "currency",
+			currency: "USD",
+			minimumFractionDigits: 0,
+			maximumFractionDigits: max,
+		}).format(value ?? 0);
 
 	const color = getColor(coin.price_change_percentage_24h);
 	return (
@@ -32,32 +33,16 @@ const CoinRow = ({ coin, isStarred, toggleWatchlist, toggleForm }) => {
 				</div>
 			</td>
 			<td className="px-6 py-4 font-medium">
-				{formatCurrency(coin.current_price * currency[1], 6)}
+				{formatUsd(coin.current_price, 6)}
 			</td>
 			<td className={`px-6 py-4 font-medium ${color}`}>
 				{coin.price_change_percentage_24h != null ? coin.price_change_percentage_24h.toFixed(2) : "N/A"}%
 			</td>
 			<td className="px-6 py-4 font-medium text-gray-800 dark:text-white">
-				{formatCurrency(((coin.market_cap ?? 0) * currency[1]).toFixed(2), 6)}
+				{formatUsd(coin.market_cap ?? 0, 2)}
 			</td>
 			<td className="px-6 py-4">
 				<div className="flex items-center gap-2">
-					<button
-						className={`cursor-pointer ${
-							!isStarred
-								? "text-gray-400 hover:text-amber-300 transition-all duration-200"
-								: "text-amber-300"
-						}`}
-						onClick={() => {
-							if (isAuthenticated) {
-								toggleWatchlist(coin.id, coin.name);
-							} else {
-								toggleForm();
-							}
-						}}
-					>
-						{isStarred ? <StarIcon /> : <StarOutlineIcon />}
-					</button>
 					<button
 						className="px-3 py-1 bg-blue-600 text-white text-sm font-semibold rounded-md hover:bg-blue-700 transition-all duration-200 cursor-pointer"
 						onClick={() => {

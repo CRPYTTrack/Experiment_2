@@ -1,6 +1,5 @@
 import StarOutlineIcon from "@mui/icons-material/StarOutline";
 import StarIcon from "@mui/icons-material/Star";
-import { useCurrency } from "../context/CurrencyContext";
 import getColor from "../utils/color";
 
 const PortfolioCoinRow = ({
@@ -10,7 +9,13 @@ const PortfolioCoinRow = ({
 	toggleWatchlist,
 	toggleForm,
 }) => {
-	const { currency, formatCurrency } = useCurrency();
+	const formatUsd = (value, max = 2) =>
+		new Intl.NumberFormat("en-US", {
+			style: "currency",
+			currency: "USD",
+			minimumFractionDigits: 0,
+			maximumFractionDigits: max,
+		}).format(value ?? 0);
 
 	if (!coinData) {
 		return <></>;
@@ -45,24 +50,16 @@ const PortfolioCoinRow = ({
 				</div>
 			</td>
 			<td className="px-6 py-4 font-medium">
-				{formatCurrency(coin.current_price * currency[1], 6)}
+				{formatUsd(coin.current_price, 6)}
 			</td>
 			<td className="px-6 py-4 font-medium text-gray-800 dark:text-white">
-				{formatCurrency(
-					(coinData.totalInvestment * currency[1]).toFixed(2),
-					6
-				)}
+				{formatUsd(coinData.totalInvestment, 6)}
 			</td>
 			<td className="px-6 py-4 font-medium text-gray-800 dark:text-white">
 				{coinData.coins.toLocaleString()}
 			</td>
 			<td className={`px-6 py-4 font-medium`}>
-				{formatCurrency(
-					(coin.current_price * coinData.coins * currency[1]).toFixed(
-						2
-					),
-					6
-				)}
+				{formatUsd(coin.current_price * coinData.coins, 6)}
 			</td>
 
 			<td className={`px-6 py-4 font-medium ${color}`}>

@@ -1,6 +1,5 @@
 import CloseIcon from "@mui/icons-material/Close";
 import { useState } from "react";
-import { useCurrency } from "../context/CurrencyContext";
 const Form = ({
 	title,
 	buttonText,
@@ -9,11 +8,16 @@ const Form = ({
 	action,
 	portfolio,
 }) => {
-	const { formatCurrency, currency } = useCurrency();
+	const formatUsd = (value, max = 2) =>
+		new Intl.NumberFormat("en-US", {
+			style: "currency",
+			currency: "USD",
+			minimumFractionDigits: 0,
+			maximumFractionDigits: max,
+		}).format(value ?? 0);
+
 	const [amount, setAmount] = useState(0);
-	const [price, setPrice] = useState(
-		((coinData.current_price ?? 0) * currency[1]).toFixed(2)
-	);
+	const [price, setPrice] = useState((coinData.current_price ?? 0).toFixed(2));
 	const isSelling = buttonText === "Remove";
 	const [warning, setWarning] = useState(null);
 
@@ -40,9 +44,7 @@ const Form = ({
 						<p className="uppercase text-xs">{coinData.symbol}</p>
 						<p className="text-xs">
 							Price:{" "}
-							{formatCurrency(
-								coinData.current_price * currency[1]
-							)}
+							{formatUsd(coinData.current_price)}
 						</p>
 					</div>
 				</div>
@@ -71,8 +73,8 @@ const Form = ({
 					<div className="flex flex-col mb-5">
 						<span>
 							{isSelling
-								? `Sell Price(${currency[0]}) `
-								: `Buy Price(${currency[0]}) `}
+								? "Sell Price(USD) "
+								: "Buy Price(USD) "}
 							<span className="text-red-500">*</span>
 						</span>
 						<input
@@ -102,9 +104,7 @@ const Form = ({
 								isSelling
 									? "Total Sale Value"
 									: "Total Investment"
-							}: ${formatCurrency(
-								Number(amount) * Number(price)
-							)}`
+							}: ${formatUsd(Number(amount) * Number(price))}`
 						) : (
 							<span className="text-red-500 text-center text-wrap break-words">
 								{warning}
@@ -147,7 +147,7 @@ const Form = ({
 
 						action(
 							coinData.id,
-							(Number(amount) * Number(price)) / currency[1],
+							Number(amount) * Number(price),
 							Number(amount)
 						);
 					}}

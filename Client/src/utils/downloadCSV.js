@@ -1,4 +1,4 @@
-export default function downloadCSV(coins, portfolio, currency) {
+export default function downloadCSV(coins, portfolio) {
 	if (
 		!coins ||
 		!portfolio ||
@@ -10,11 +10,11 @@ export default function downloadCSV(coins, portfolio, currency) {
 
 	const headers = [
 		"Name",
-		`Price(${currency[0]})`,
-		`Investment(${currency[0]})`,
+		"Price(USD)",
+		"Investment(USD)",
 		"Coins Purchased",
-		`Current Value(${currency[0]})`,
-		`P/L Value(${currency[0]})`,
+		"Current Value(USD)",
+		"P/L Value(USD)",
 		"P/L %",
 	];
 
@@ -32,11 +32,11 @@ export default function downloadCSV(coins, portfolio, currency) {
 
 			return [
 				coinData.name,
-				coinData.current_price * currency[1],
-				totalInvestment * currency[1],
+				coinData.current_price,
+				totalInvestment,
 				portfolioData.coins,
-				currentValue * currency[1],
-				profitValue * currency[1],
+				currentValue,
+				profitValue,
 				profitPercentage,
 			].join(",");
 		})

@@ -8,10 +8,16 @@ import {
 	YAxis,
 	CartesianGrid,
 } from "recharts";
-import { useCurrency } from "../context/CurrencyContext";
 
 export default function BarChartComponent({ chart }) {
-	const { currency, formatCurrency } = useCurrency();
+	const formatUsd = (value) =>
+		new Intl.NumberFormat("en-US", {
+			style: "currency",
+			currency: "USD",
+			minimumFractionDigits: 0,
+			maximumFractionDigits: 2,
+		}).format(value);
+
 	return (
 		<ResponsiveContainer width="100%" minWidth={500} height="100%">
 			<BarChart
@@ -36,17 +42,14 @@ export default function BarChartComponent({ chart }) {
 						new Intl.NumberFormat("en-US", {
 							notation: "compact",
 							compactDisplay: "short",
-						}).format(value * currency[1])
+						}).format(value)
 					}
 				/>
 				<Tooltip
 					cursor={{
 						fill: "rgba(204, 204, 204, 0.2)",
 					}}
-					formatter={(value, name) => [
-						formatCurrency(value * currency[1]),
-						name,
-					]}
+					formatter={(value, name) => [formatUsd(value), name]}
 				/>
 				<Legend />
 				<Bar

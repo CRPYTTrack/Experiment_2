@@ -7,9 +7,7 @@ export default function downloadPDF(
 	coins,
 	portfolio,
 	currentValue,
-	totalInvestment,
-	currency,
-	formatCurrency
+	totalInvestment
 ) {
 	if (
 		!coins ||
@@ -20,6 +18,14 @@ export default function downloadPDF(
 		return;
 
 	const doc = new jsPDF();
+	const formatUsd = (value, max = 2) =>
+		new Intl.NumberFormat("en-US", {
+			style: "currency",
+			currency: "USD",
+			minimumFractionDigits: 0,
+			maximumFractionDigits: max,
+		}).format(value ?? 0);
+
 	doc.addFileToVFS("NotoSans-Regular.ttf", NotoSans);
 	doc.addFont("NotoSans-Regular.ttf", "NotoSans", "normal");
 	doc.addFileToVFS("NotoSans-Bold.ttf", NotoSansBold);
@@ -28,11 +34,11 @@ export default function downloadPDF(
 
 	const headers = [
 		"Name",
-		`Price(${currency[0]})`,
-		`Investment(${currency[0]})`,
+		"Price(USD)",
+		"Investment(USD)",
 		"Coins Purchased",
-		`Current Value(${currency[0]})`,
-		`P/L Value(${currency[0]})`,
+		"Current Value(USD)",
+		"P/L Value(USD)",
 		"P/L %",
 	];
 
@@ -49,23 +55,12 @@ export default function downloadPDF(
 	doc.setFontSize(12);
 
 	let startY = 35;
-	doc.text(
-		`Total Investment: ${formatCurrency(totalInvestment * currency[1], 6)}`,
-		14,
-		startY
-	);
+	doc.text(`Total Investment: ${formatUsd(totalInvestment, 6)}`, 14, startY);
+	startY += 8;
+	doc.text(`Current Value: ${formatUsd(currentValue, 6)}`, 14, startY);
 	startY += 8;
 	doc.text(
-		`Current Value: ${formatCurrency(currentValue * currency[1], 6)}`,
-		14,
-		startY
-	);
-	startY += 8;
-	doc.text(
-		`Total Profit/Loss Value: ${formatCurrency(
-			profitLossValue * currency[1],
-			6
-		)}`,
+		`Total Profit/Loss Value: ${formatUsd(profitLossValue, 6)}`,
 		14,
 		startY
 	);
@@ -90,11 +85,11 @@ export default function downloadPDF(
 
 			return [
 				coinData.name,
-				coinData.current_price * currency[1],
-				investment * currency[1],
+				coinData.current_price,
+				investment,
 				portfolioData.coins,
-				value * currency[1],
-				profitValue * currency[1],
+				value,
+				profitValue,
 				profitPercentage,
 			];
 		})
@@ -137,7 +132,7 @@ export default function downloadPDF(
 		})
 		.filter(Boolean);
 
-	const tableHeaders = ["Name", `P/L Value(${currency[0]})`, "P/L %"];
+	const tableHeaders = ["Name", "P/L Value(USD)", "P/L %"];
 
 	const gainers = performers
 		.filter((ele) => ele.profit > 0)
@@ -155,7 +150,7 @@ export default function downloadPDF(
 			head: [tableHeaders],
 			body: gainers.map((g) => [
 				g.name,
-				formatCurrency(g.profit * currency[1], 6),
+				formatUsd(g.profit, 6),
 				`${g.profitPercentage.toFixed(2)}%`,
 			]),
 			startY: lastTableBottom + 20,
@@ -174,7 +169,7 @@ export default function downloadPDF(
 			head: [tableHeaders],
 			body: losers.map((l) => [
 				l.name,
-				formatCurrency(l.profit * currency[1], 6),
+				formatUsd(l.profit, 6),
 				`${l.profitPercentage.toFixed(2)}%`,
 			]),
 			startY: lastTableBottom + 20,
