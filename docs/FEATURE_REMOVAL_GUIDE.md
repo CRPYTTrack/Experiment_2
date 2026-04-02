@@ -1,6 +1,6 @@
 # Feature Removal & Restoration Guide
 
-This document provides **exact line numbers and code changes** needed to remove/restore 3 visual features from the CryptoTrack application for testing purposes.
+This document provides **exact line numbers and code changes** needed to remove/restore 5 visual features from the CryptoTrack application for testing purposes.
 
 ---
 
@@ -17,6 +17,21 @@ This document provides **exact line numbers and code changes** needed to remove/
 | | `Client/src/components/Header.jsx` | ~84-94 |
 | | `Client/src/components/Menu.jsx` | ~58-68 |
 | | `Client/src/App.jsx` | 16, 28, 37, 53-56, 69-118 |
+| **Currency Converter** | `Client/src/main.jsx` | 7, 17-19 |
+| | `Client/src/components/Header.jsx` | 4, line with `<CurrencySelector />` |
+| | `Client/src/components/BarChartComponent.jsx` | 11, 14, 47 |
+| | `Client/src/components/CoinRow.jsx` | 3, 9, 35, 41 |
+| | `Client/src/components/PortfolioTable.jsx` | 4, 20, all formatCurrency calls |
+| | `Client/src/components/PortfolioCoinRow.jsx` | 3, 12, 36 |
+| | `Client/src/components/Form.jsx` | 3, 11, 14, 37 |
+| | `Client/src/components/PieChartComponent.jsx` | 10, 24, 50 |
+| | `Client/src/pages/Dashboard.jsx` | 8, 26, 58, 74 |
+| | `Client/src/pages/PriceAlerts.jsx` | 7, 19, all formatCurrency calls |
+| | `Client/src/utils/downloadCSV.js` | 13-17, 35-39 |
+| | `Client/src/utils/downloadPDF.js` | 31-35, 53-177 |
+| | `Client/src/context/CurrencyContext.jsx` | Delete entire file |
+| | `Client/src/components/CurrencySelector.jsx` | Delete entire file |
+| | `Client/src/hooks/useCurrencyData.js` | Delete entire file |
 
 ---
 
@@ -864,6 +879,658 @@ To restore Alerts feature:
 
 ---
 
+## Feature 5: Currency Converter
+
+### Files to Modify
+**17 files total:**
+
+**Core Currency Files (delete entirely):**
+- `Client/src/context/CurrencyContext.jsx`
+- `Client/src/components/CurrencySelector.jsx`
+- `Client/src/hooks/useCurrencyData.js`
+
+**Provider/Wrapper:**
+- `Client/src/main.jsx`
+
+**Components using Currency Context (17 files - remove imports & replace with hardcoded USD):**
+- `Client/src/components/Header.jsx`
+- `Client/src/components/BarChartComponent.jsx`
+- `Client/src/components/CoinRow.jsx`
+- `Client/src/components/PortfolioTable.jsx`
+- `Client/src/components/PortfolioCoinRow.jsx`
+- `Client/src/components/Form.jsx`
+- `Client/src/components/PieChartComponent.jsx`
+- `Client/src/pages/Dashboard.jsx`
+- `Client/src/pages/PriceAlerts.jsx`
+- `Client/src/utils/downloadCSV.js`
+- `Client/src/utils/downloadPDF.js`
+
+### What Gets Removed
+- Currency selector dropdown from header
+- Multi-currency support (only USD will be used)
+- CurrencyContext provider wrapper
+- useCurrencyData hook and coin exchange rate fetching
+- All dynamic currency conversion calculations (`currency[1]` multiplications)
+- Currency formatting with locale switching
+
+### Deletion Instructions
+
+#### Step 1: Remove CurrencyProvider from main.jsx
+**File**: `Client/src/main.jsx`
+**Line to delete: 7**
+```javascript
+// DELETE THIS LINE:
+import { CurrencyProvider } from "./context/CurrencyContext";
+```
+
+**Before:**
+```javascript
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import "./index.css";
+import { AuthProvider } from "./context/AuthContext";
+import { CurrencyProvider } from "./context/CurrencyContext";  // DELETE
+import { BrowserRouter } from "react-router-dom";
+```
+
+**After:**
+```javascript
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import "./index.css";
+import { AuthProvider } from "./context/AuthContext";
+import { BrowserRouter } from "react-router-dom";
+```
+
+---
+
+#### Step 2: Remove CurrencyProvider Wrapper from main.jsx
+**File**: `Client/src/main.jsx`
+**Lines to delete: ~17-19** (The wrapper around App)
+
+**Before:**
+```javascript
+ReactDOM.createRoot(document.getElementById("root")).render(
+	<React.StrictMode>
+		<BrowserRouter>
+			<AuthProvider>
+				<CurrencyProvider>           // DELETE START
+					<App />
+				</CurrencyProvider>          // DELETE END
+			</AuthProvider>
+		</BrowserRouter>
+	</React.StrictMode>
+);
+```
+
+**After:**
+```javascript
+ReactDOM.createRoot(document.getElementById("root")).render(
+	<React.StrictMode>
+		<BrowserRouter>
+			<AuthProvider>
+				<App />
+			</AuthProvider>
+		</BrowserRouter>
+	</React.StrictMode>
+);
+```
+
+---
+
+#### Step 3: Remove CurrencySelector from Header.jsx
+**File**: `Client/src/components/Header.jsx`
+**Line to delete: 4**
+```javascript
+// DELETE THIS LINE:
+import CurrencySelector from "./CurrencySelector";
+```
+
+**Before:**
+```javascript
+import { NavLink } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import Menu from "./Menu";
+import CurrencySelector from "./CurrencySelector";    // DELETE
+import { useState } from "react";
+```
+
+**After:**
+```javascript
+import { NavLink } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import Menu from "./Menu";
+import { useState } from "react";
+```
+
+---
+
+#### Step 4: Remove useCurrency import from Header.jsx
+**File**: `Client/src/components/Header.jsx`
+**Remove the line: `import { useCurrency } from "../context/CurrencyContext";`** (if present)
+
+**Before:**
+```javascript
+import { useState } from "react";
+import { useCurrency } from "../context/CurrencyContext";  // DELETE IF PRESENT
+```
+
+**After:**
+```javascript
+import { useState } from "react";
+```
+
+---
+
+#### Step 5: Remove CurrencySelector JSX from Header.jsx
+**File**: `Client/src/components/Header.jsx`
+**Find and delete the CurrencySelector component in the header JSX** (~around line 80-85, depends on file)
+
+**Before** (desktop header section):
+```javascript
+                    </NavLink>
+                    <CurrencySelector />     // DELETE THIS LINE
+                </div>
+```
+
+**After:**
+```javascript
+                    </NavLink>
+                </div>
+```
+
+---
+
+#### Step 6: Remove CurrencySelector from Mobile Menu (if present)
+**File**: `Client/src/components/Menu.jsx`
+**Check if CurrencySelector is used in menu and delete**
+
+---
+
+#### Step 7: Update Header.jsx - Remove useCurrency Hook Calls
+**File**: `Client/src/components/Header.jsx`
+**If Header.jsx has destructuring of useCurrency, remove it:**
+
+**Before:**
+```javascript
+const { currency } = useCurrency();  // DELETE if present
+```
+
+**After:**
+(Remove the line entirely)
+
+---
+
+#### Step 8: Update BarChartComponent.jsx
+**File**: `Client/src/components/BarChartComponent.jsx`
+**Line 11: Delete useCurrency import**
+
+**Before:**
+```javascript
+import { useCurrency } from "../context/CurrencyContext";  // DELETE
+```
+
+**After:**
+(Line removed)
+
+---
+
+**Line 14: Delete useCurrency hook destructuring**
+
+**Before:**
+```javascript
+const { currency, formatCurrency } = useCurrency();  // DELETE
+```
+
+**After:**
+(Line removed)
+
+---
+
+**Line 47: Replace currency multiplication with hardcoded USD format**
+
+**Before:**
+```javascript
+formatCurrency(value * currency[1])
+```
+
+**After:**
+```javascript
+`$${(value).toFixed(2)}`
+```
+
+---
+
+#### Step 9: Update CoinRow.jsx
+**File**: `Client/src/components/CoinRow.jsx`
+**Line 3: Delete useCurrency import**
+
+**Before:**
+```javascript
+import { useCurrency } from "../context/CurrencyContext";  // DELETE
+```
+
+**After:**
+(Line removed)
+
+---
+
+**Line 9: Delete useCurrency hook destructuring**
+
+**Before:**
+```javascript
+const { currency, formatCurrency } = useCurrency();  // DELETE
+```
+
+**After:**
+(Line removed)
+
+---
+
+**Lines 35, 41: Replace currency multiplications with hardcoded USD**
+
+**Before (Line 35):**
+```javascript
+formatCurrency(coin.current_price * currency[1], 6)
+```
+
+**After:**
+```javascript
+`$${(coin.current_price).toFixed(6)}`
+```
+
+---
+
+**Before (Line 41):**
+```javascript
+formatCurrency(((coin.market_cap ?? 0) * currency[1]).toFixed(2), 6)
+```
+
+**After:**
+```javascript
+`$${((coin.market_cap ?? 0) || 0).toFixed(2)}`
+```
+
+---
+
+#### Step 10: Update PortfolioTable.jsx
+**File**: `Client/src/components/PortfolioTable.jsx`
+**Line 4: Delete useCurrency import**
+
+**Before:**
+```javascript
+import { useCurrency } from "../context/CurrencyContext";  // DELETE
+```
+
+**After:**
+(Line removed)
+
+---
+
+**Line 20: Delete useCurrency hook destructuring**
+
+**Before:**
+```javascript
+const { currency, formatCurrency } = useCurrency();  // DELETE
+```
+
+**After:**
+(Line removed)
+
+---
+
+**Update all references to `formatCurrency()` in the component JSX to use hardcoded USD format:**
+
+**Before:**
+```javascript
+formatCurrency(value * currency[1])
+```
+
+**After:**
+```javascript
+`$${(value).toFixed(2)}`
+```
+
+---
+
+#### Step 11: Update PortfolioCoinRow.jsx
+**File**: `Client/src/components/PortfolioCoinRow.jsx`
+**Line 3: Delete useCurrency import**
+
+**Before:**
+```javascript
+import { useCurrency } from "../context/CurrencyContext";  // DELETE
+```
+
+**After:**
+(Line removed)
+
+---
+
+**Line 12: Delete useCurrency hook destructuring**
+
+**Before:**
+```javascript
+const { currency, formatCurrency } = useCurrency();  // DELETE
+```
+
+**After:**
+(Line removed)
+
+---
+
+**Line 36: Replace currency multiplication**
+
+**Before:**
+```javascript
+formatCurrency(coin.current_price * currency[1], 6)
+```
+
+**After:**
+```javascript
+`$${(coin.current_price).toFixed(6)}`
+```
+
+---
+
+#### Step 12: Update Form.jsx
+**File**: `Client/src/components/Form.jsx`
+**Line 3: Delete useCurrency import**
+
+**Before:**
+```javascript
+import { useCurrency } from "../context/CurrencyContext";  // DELETE
+```
+
+**After:**
+(Line removed)
+
+---
+
+**Line 11: Delete useCurrency hook destructuring**
+
+**Before:**
+```javascript
+const { formatCurrency, currency } = useCurrency();  // DELETE
+```
+
+**After:**
+(Line removed)
+
+---
+
+**Lines 14, 37: Replace currency multiplications**
+
+**Before (Line 14):**
+```javascript
+((coinData.current_price ?? 0) * currency[1]).toFixed(2)
+```
+
+**After:**
+```javascript
+(coinData.current_price ?? 0).toFixed(2)
+```
+
+---
+
+**Before (Line 37):**
+```javascript
+formatCurrency(coinData.current_price * currency[1])
+```
+
+**After:**
+```javascript
+`$${(coinData.current_price).toFixed(2)}`
+```
+
+---
+
+#### Step 13: Update PieChartComponent.jsx
+**File**: `Client/src/components/PieChartComponent.jsx`
+**Line 10: Delete useCurrency import**
+
+**Before:**
+```javascript
+import { useCurrency } from "../context/CurrencyContext";  // DELETE
+```
+
+**After:**
+(Line removed)
+
+---
+
+**Line 24: Delete useCurrency hook destructuring**
+
+**Before:**
+```javascript
+const { currency, formatCurrency } = useCurrency();  // DELETE
+```
+
+**After:**
+(Line removed)
+
+---
+
+**Line 50: Replace currency multiplication in formatter**
+
+**Before:**
+```javascript
+formatter={(value) => formatCurrency(value * currency[1])}
+```
+
+**After:**
+```javascript
+formatter={(value) => `$${(value).toFixed(2)}`}
+```
+
+---
+
+#### Step 14: Update Dashboard.jsx
+**File**: `Client/src/pages/Dashboard.jsx`
+**Line 8: Delete useCurrency import**
+
+**Before:**
+```javascript
+import { useCurrency } from "../context/CurrencyContext";  // DELETE
+```
+
+**After:**
+(Line removed)
+
+---
+
+**Line 26: Delete useCurrency hook destructuring**
+
+**Before:**
+```javascript
+const { currency, formatCurrency } = useCurrency();  // DELETE
+```
+
+**After:**
+(Line removed)
+
+---
+
+**Lines 58, 74: Replace currency multiplications**
+
+**Before (Line 58):**
+```javascript
+formatCurrency(currentValue * currency[1])
+```
+
+**After:**
+```javascript
+`$${(currentValue).toFixed(2)}`
+```
+
+---
+
+**Before (Line 74):**
+```javascript
+formatCurrency(totalInvestment * currency[1])
+```
+
+**After:**
+```javascript
+`$${(totalInvestment).toFixed(2)}`
+```
+
+---
+
+#### Step 15: Update PriceAlerts.jsx
+**File**: `Client/src/pages/PriceAlerts.jsx`
+**Line 7: Delete useCurrency import**
+
+**Before:**
+```javascript
+import { useCurrency } from "../context/CurrencyContext";  // DELETE
+```
+
+**After:**
+(Line removed)
+
+---
+
+**Line 19: Delete useCurrency hook destructuring**
+
+**Before:**
+```javascript
+const { formatCurrency } = useCurrency();  // DELETE
+```
+
+**After:**
+(Line removed)
+
+---
+
+**Find all `formatCurrency()` calls and replace with hardcoded USD format:**
+
+**Before:**
+```javascript
+formatCurrency(value * currency[1])
+```
+
+**After:**
+```javascript
+`$${(value).toFixed(2)}`
+```
+
+---
+
+#### Step 16: Update downloadCSV.js
+**File**: `Client/src/utils/downloadCSV.js`
+**Remove all references to `currency[0]` in CSV headers (line 13-17 approximately)**
+
+**Before:**
+```javascript
+// Header row with currency code
+const headers = [
+    "Coin Name",
+    `Price (${currency[0]})`,
+    `Market Cap (${currency[0]})`,
+    ...
+];
+```
+
+**After:**
+```javascript
+// Header row - USD only
+const headers = [
+    "Coin Name",
+    "Price (USD)",
+    "Market Cap (USD)",
+    ...
+];
+```
+
+---
+
+**Replace all `currency[1]` multiplications (lines 35-39 approximately):**
+
+**Before:**
+```javascript
+coin.current_price * currency[1]
+```
+
+**After:**
+```javascript
+coin.current_price
+```
+
+---
+
+#### Step 17: Update downloadPDF.js
+**File**: `Client/src/utils/downloadPDF.js`
+**Remove all references to `currency[0]` in PDF headers (lines 31-35 approximately)**
+
+**Before:**
+```javascript
+// Header with currency code
+const header = `Portfolio Report - ${currency[0]}`;
+```
+
+**After:**
+```javascript
+// Header USD only
+const header = `Portfolio Report - USD`;
+```
+
+---
+
+**Replace all `currency[1]` multiplications (lines 53-177 approximately):**
+
+**Before:**
+```javascript
+value * currency[1]
+formatCurrency(amount * currency[1])
+```
+
+**After:**
+```javascript
+value
+formatCurrency(amount)
+```
+
+---
+
+#### Step 18: Delete Core Currency Files
+**Delete these 3 files completely:**
+1. `Client/src/context/CurrencyContext.jsx`
+2. `Client/src/components/CurrencySelector.jsx`
+3. `Client/src/hooks/useCurrencyData.js`
+
+---
+
+### Restoration Instructions
+To restore Currency Converter feature:
+1. Re-add the CurrencyProvider import and wrapper in main.jsx
+2. Re-add all `import { useCurrency }` statements in the 11 component files
+3. Re-add all useCurrency hook destructuring calls
+4. Replace all hardcoded USD strings back to `formatCurrency(value * currency[1])` calls
+5. Re-add CurrencySelector import in Header.jsx and render it
+6. Restore the 3 deleted files from backup:
+   - CurrencyContext.jsx
+   - CurrencySelector.jsx
+   - useCurrencyData.js
+
+---
+
+### Verification Steps
+After removal:
+- [ ] CurrencySelector dropdown is gone from header
+- [ ] All prices display in USD format (e.g., `$1,234.56`)
+- [ ] No console errors about missing context
+- [ ] Portfolio prices calculate correctly in USD only
+- [ ] Charts display with hardcoded USD labels
+- [ ] CSV export shows "USD" in headers, not dynamic currency codes
+- [ ] PDF export shows "USD" in headers, not dynamic currency codes
+- [ ] All components render without errors
+- [ ] Prices update correctly when data refreshes
+
+---
+
 ## Quick Reference: Deletion Checklist
 
 ### Feature 1: Charts Removal
@@ -899,6 +1566,20 @@ To restore Alerts feature:
 - [ ] Delete Alerts NavLink from Menu.jsx
 - [ ] Delete Alerts route from Routes
 - [ ] Delete entire PriceAlerts.jsx file
+
+### Feature 5: Currency Converter Removal
+- [ ] Delete CurrencyProvider import from main.jsx
+- [ ] Remove CurrencyProvider wrapper from JSX in main.jsx
+- [ ] Delete CurrencySelector import from Header.jsx
+- [ ] Remove CurrencySelector component from Header.jsx JSX
+- [ ] Delete useCurrency imports from 11 component files (BarChartComponent, CoinRow, PortfolioTable, PortfolioCoinRow, Form, PieChartComponent, Dashboard, PriceAlerts)
+- [ ] Remove useCurrency hook calls from all 11 components
+- [ ] Replace all `formatCurrency(value * currency[1])` with hardcoded USD format
+- [ ] Replace all `currency[0]` references with "USD" in export files (downloadCSV.js, downloadPDF.js)
+- [ ] Replace all `currency[1]` multiplications with direct values in export files
+- [ ] Delete CurrencyContext.jsx file
+- [ ] Delete CurrencySelector.jsx file
+- [ ] Delete useCurrencyData.js file
 
 ---
 
@@ -938,6 +1619,20 @@ To restore Alerts feature:
 - [ ] Delete Alerts route from Routes
 - [ ] Delete entire PriceAlerts.jsx file
 
+### Feature 5: Currency Converter Removal
+- [ ] Delete CurrencyProvider import from main.jsx
+- [ ] Remove CurrencyProvider wrapper from JSX in main.jsx
+- [ ] Delete CurrencySelector import from Header.jsx
+- [ ] Remove CurrencySelector component from Header.jsx JSX
+- [ ] Delete useCurrency imports from 11 component files
+- [ ] Remove useCurrency hook calls from all components
+- [ ] Replace all `formatCurrency(value * currency[1])` with hardcoded USD format
+- [ ] Replace all `currency[0]` references with "USD" in export files
+- [ ] Replace all `currency[1]` multiplications with direct values
+- [ ] Delete CurrencyContext.jsx file
+- [ ] Delete CurrencySelector.jsx file
+- [ ] Delete useCurrencyData.js file
+
 ---
 
 ## Testing Flow
@@ -946,6 +1641,7 @@ To restore Alerts feature:
 2. **Remove Feature 2 (Watchlist)** → Take screenshot → Restore
 3. **Remove Feature 3 (Searchbar)** → Take screenshot → Restore
 4. **Remove Feature 4 (Alerts)** → Take screenshot → Restore
+5. **Remove Feature 5 (Currency Converter)** → Take screenshot → Restore
 
 All changes are isolated and don't affect other features except where noted above.
 
@@ -957,6 +1653,7 @@ All changes are isolated and don't affect other features except where noted abov
 ✅ **Feature 2 (Watchlist)**: Currently RESTORED
 ✅ **Feature 3 (Searchbar)**: Currently RESTORED
 ✅ **Feature 4 (Alerts)**: Currently RESTORED
+✅ **Feature 5 (Currency Converter)**: Currently RESTORED
 
 All features verified and available in the application.
 
@@ -964,13 +1661,16 @@ All features verified and available in the application.
 
 ## Notes
 
-- **No cascading dependencies**: Each feature can be removed independently
+- **No cascading dependencies**: Each feature can be removed independently (except Currency Converter affects 17 files)
 - **API calls continue**: Backend queries still work during feature removal
-- **State management**: Context providers (Auth, Currency) remain active
+- **State management**: Context providers (Auth) remain active; Currency context can be fully removed
 - **Data persists**: User data, portfolio, watchlist, and alerts data still loads (just hidden from UI)
 - **Alerts Background Job**: 60-second interval checker can be disabled by removing alert checking useEffect
+- **Currency Converter Complexity**: This is the most complex feature to remove as it affects 17+ files across components, utilities, and export functions. Consider removing last or in a separate session.
+- **USD Hardcoding**: After currency removal, all monetary values will display as USD with 2-6 decimal places depending on the context
 
 ---
 
-*Last Updated: April 1, 2026*
+*Last Updated: April 2, 2026*
 *Created for: Feature Testing & Experimentation*
+*Features Documented: 5 (Charts, Watchlist, Searchbar, Price Alerts, Currency Converter)*
