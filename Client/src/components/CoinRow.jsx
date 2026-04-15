@@ -1,13 +1,10 @@
+import StarOutlineIcon from "@mui/icons-material/StarOutline";
+import StarIcon from "@mui/icons-material/Star";
+import { useCurrency } from "../context/CurrencyContext";
 import getColor from "../utils/color";
 
-const CoinRow = ({ coin, toggleForm }) => {
-	const formatUsd = (value, max = 2) =>
-		new Intl.NumberFormat("en-US", {
-			style: "currency",
-			currency: "USD",
-			minimumFractionDigits: 0,
-			maximumFractionDigits: max,
-		}).format(value ?? 0);
+const CoinRow = ({ coin, isStarred, toggleWatchlist, toggleForm }) => {
+	const { currency, formatCurrency } = useCurrency();
 
 	const color = getColor(coin.price_change_percentage_24h);
 	return (
@@ -33,17 +30,33 @@ const CoinRow = ({ coin, toggleForm }) => {
 				</div>
 			</td>
 			<td className="px-6 py-4 font-medium">
-				{formatUsd(coin.current_price, 6)}
+				{formatCurrency((coin.current_price ?? 0) * currency[1], 6)}
 			</td>
 			<td className={`px-6 py-4 font-medium ${color}`}>
 				{coin.price_change_percentage_24h != null ? coin.price_change_percentage_24h.toFixed(2) : "N/A"}%
 			</td>
 			<td className="px-6 py-4 font-medium text-gray-800 dark:text-white">
-				{formatUsd(coin.market_cap ?? 0, 2)}
+				{formatCurrency((coin.market_cap ?? 0) * currency[1], 2)}
 			</td>
 			<td className="px-6 py-4">
 				<div className="flex items-center gap-2">
+					{toggleWatchlist && (
+						<button
+							type="button"
+							className={`cursor-pointer ${
+								!isStarred
+									? "text-gray-400 hover:text-amber-300 transition-all duration-200"
+									: "text-amber-300"
+							}`}
+							onClick={() => {
+								toggleWatchlist(coin.id, coin.name);
+							}}
+						>
+							{isStarred ? <StarIcon /> : <StarOutlineIcon />}
+						</button>
+					)}
 					<button
+						type="button"
 						className="px-3 py-1 bg-blue-600 text-white text-sm font-semibold rounded-md hover:bg-blue-700 transition-all duration-200 cursor-pointer"
 						onClick={() => {
 							toggleForm(coin);

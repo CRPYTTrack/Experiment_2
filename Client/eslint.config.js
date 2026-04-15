@@ -1,5 +1,6 @@
 import js from "@eslint/js";
 import globals from "globals";
+import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import { defineConfig, globalIgnores } from "eslint/config";
@@ -22,9 +23,27 @@ export default defineConfig([
 				sourceType: "module",
 			},
 		},
+		plugins: {
+			react,
+		},
 		rules: {
 			"react/jsx-uses-vars": "error",
+			"react-refresh/only-export-components": "off",
 			"no-unused-vars": "warn",
+		},
+	},
+	{
+		files: [
+			"**/*.test.{js,jsx}",
+			"**/__tests__/**/*.{js,jsx}",
+			"jest.setup.js",
+		],
+		languageOptions: {
+			globals: {
+				...globals.browser,
+				...globals.node,
+				...globals.jest,
+			},
 		},
 	},
 ]);

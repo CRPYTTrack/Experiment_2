@@ -6,6 +6,7 @@ import {
 	Legend,
 	ResponsiveContainer,
 } from "recharts";
+import { useCurrency } from "../context/CurrencyContext";
 
 const COLORS = [
 	"#0088FE",
@@ -23,13 +24,7 @@ const COLORS = [
 ];
 
 export default function PieChartComponent({ chart }) {
-	const formatUsd = (value) =>
-		new Intl.NumberFormat("en-US", {
-			style: "currency",
-			currency: "USD",
-			minimumFractionDigits: 0,
-			maximumFractionDigits: 2,
-		}).format(value);
+	const { currency, formatCurrency } = useCurrency();
 
 	return (
 		<ResponsiveContainer>
@@ -51,7 +46,7 @@ export default function PieChartComponent({ chart }) {
 						/>
 					))}
 				</Pie>
-				<Tooltip formatter={(value) => formatUsd(value)} />
+				<Tooltip formatter={(value) => formatCurrency(value * currency[1])} />
 				<Legend />
 			</PieChart>
 		</ResponsiveContainer>

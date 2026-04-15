@@ -13,6 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import Watchlist from "./pages/Watchlist";
+import Alerts from "./pages/Alerts";
 import { AnimatePresence } from "motion/react";
 import { useAuth } from "./context/AuthContext";
 import { portfolioAPI, watchlistAPI } from "./services/api";
@@ -93,6 +94,22 @@ const App = () => {
 			});
 		} catch (error) {
 			console.error("Failed to add coin:", error);
+			toast.error(
+				error?.response?.status === 401
+					? "Session expired. Please login again."
+					:
+				error?.response?.data?.error ||
+					error?.response?.data?.Error ||
+					"Failed to add coin. Please try again.",
+				{
+					position: "top-right",
+					autoClose: 3000,
+					hideProgressBar: false,
+					closeOnClick: true,
+					pauseOnHover: true,
+					draggable: true,
+				}
+			);
 		}
 	}
 
@@ -115,6 +132,22 @@ const App = () => {
 			});
 		} catch (error) {
 			console.error("Failed to remove coin:", error);
+			toast.error(
+				error?.response?.status === 401
+					? "Session expired. Please login again."
+					:
+				error?.response?.data?.error ||
+					error?.response?.data?.Error ||
+					"Failed to remove coin. Please try again.",
+				{
+					position: "top-right",
+					autoClose: 3000,
+					hideProgressBar: false,
+					closeOnClick: true,
+					pauseOnHover: true,
+					draggable: true,
+				}
+			);
 		}
 	}
 
@@ -130,6 +163,19 @@ const App = () => {
 
 	async function toggleWatchlist(coinId, coinName = null) {
 		try {
+			if (!isAuthenticated) {
+				toast.info("Please login to manage your watchlist.", {
+					position: "top-right",
+					autoClose: 2500,
+					hideProgressBar: false,
+					closeOnClick: true,
+					pauseOnHover: true,
+					draggable: true,
+				});
+				navigate("/login");
+				return;
+			}
+
 			if (!watchlist.includes(coinId)) {
 				const response = await watchlistAPI.add(coinId);
 				setWatchlist(response.watchlist);
@@ -155,14 +201,19 @@ const App = () => {
 			}
 		} catch (error) {
 			console.error("Failed to update watchlist:", error);
-			toast.error("Failed to update watchlist. Please try again.", {
+			toast.error(
+				error?.response?.status === 401
+					? "Session expired. Please login again."
+					: "Failed to update watchlist. Please try again.",
+				{
 				position: "top-right",
 				autoClose: 3000,
 				hideProgressBar: false,
 				closeOnClick: true,
 				pauseOnHover: true,
 				draggable: true,
-			});
+				}
+			);
 		}
 	}
 
@@ -235,6 +286,12 @@ const App = () => {
 						)
 					}
 				/>
+							<Route
+								path="/alerts"
+								element={
+									isAuthenticated ? <Alerts /> : <Navigate to="/login" />
+								}
+							/>
 				<Route
 					path="/login"
 					element={

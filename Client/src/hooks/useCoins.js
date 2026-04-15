@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { getCoinGeckoMarketsUrl } from "../constants";
 
 export default function useCoins(portfolio) {
 	const portfolioCoins = Object.keys(portfolio);
@@ -19,9 +20,7 @@ export default function useCoins(portfolio) {
 
 			try {
 				const coinIds = portfolioCoins.join(",");
-				const res = await fetch(
-					`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coinIds}&order=market_cap_desc&sparkline=false`
-				);
+				const res = await fetch(getCoinGeckoMarketsUrl(coinIds));
 				if (!res.ok) throw new Error("An error occured");
 				const data = await res.json();
 				setCoins(data);

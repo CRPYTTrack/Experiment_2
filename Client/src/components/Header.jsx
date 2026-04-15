@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import BrightnessMediumIcon from "@mui/icons-material/BrightnessMedium";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import useTheme from "../hooks/useTheme";
+import CurrencySelector from "./CurrencySelector";
 
 const Header = ({ menu, toggleMenu, handleLogout }) => {
 	const { isAuthenticated } = useAuth();
@@ -25,7 +26,7 @@ const Header = ({ menu, toggleMenu, handleLogout }) => {
 						`rounded-sm px-3 py-2 text-sm font-medium ${
 							isActive
 								? "bg-blue-200 text-blue-700 dark:bg-blue-700/20 dark:text-gray-100"
-								: "dark:text-gray-300 dark:hover:text-white dark:hover:bg-blue-500/1	0 text-gray-700 hover:bg-blue-50 hover:text-blue-700 cursor-pointer"
+								: "dark:text-gray-300 dark:hover:text-white dark:hover:bg-blue-500/10 text-gray-700 hover:bg-blue-50 hover:text-blue-700 cursor-pointer"
 						}`
 					}
 				>
@@ -45,13 +46,39 @@ const Header = ({ menu, toggleMenu, handleLogout }) => {
 						>
 							Dashboard
 						</NavLink>
+						<NavLink
+							to="watchlist"
+							className={({ isActive }) =>
+								`rounded-sm px-3 py-2 text-sm font-medium ${
+									isActive
+										? "bg-blue-200 text-blue-700 dark:bg-blue-700/20 dark:text-gray-100"
+										: "dark:text-gray-300 dark:hover:text-white dark:hover:bg-blue-500/10 text-gray-700 hover:bg-blue-50 hover:text-blue-700 cursor-pointer"
+								}`
+							}
+						>
+							Watchlist
+						</NavLink>
+						<NavLink
+							to="alerts"
+							className={({ isActive }) =>
+								`rounded-sm px-3 py-2 text-sm font-medium ${
+									isActive
+										? "bg-blue-200 text-blue-700 dark:bg-blue-700/20 dark:text-gray-100"
+										: "dark:text-gray-300 dark:hover:text-white dark:hover:bg-blue-500/10 text-gray-700 hover:bg-blue-50 hover:text-blue-700 cursor-pointer"
+								}`
+							}
+						>
+							Alerts
+						</NavLink>
 
 						<button
+							type="button"
 							onClick={handleLogout}
 							className="rounded-sm px-3 py-2 text-sm font-medium cursor-pointer text-white bg-blue-600 hover:bg-blue-700"
 						>
 							Logout
 						</button>
+						<CurrencySelector />
 					</>
 				) : (
 					<>
