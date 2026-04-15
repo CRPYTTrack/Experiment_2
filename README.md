@@ -84,101 +84,40 @@ Downloadable portfolio report in CSV format.
 
 ## Documentation
 
-For a deeper dive into the technical details, API endpoints, and database configuration, please refer to the following guides within the `docs/` directory:
-- [System Architecture](./docs/architecture.md)
-- [API Reference](./docs/api-reference.md)
-- [Local Setup Guide](./docs/setup-guide.md)
-- [SQLite Database Configuration](./docs/sqlite-config.md)
+For a deeper dive into the technical details, API endpoints, database configuration, and setup instructions, please refer to the following guides:
+
+- **[Installation Guide](./INSTALLATION.md)** - Comprehensive setup instructions for local development
+- [System Architecture](./docs/architecture.md) - Technical architecture and design patterns
+- [API Reference](./docs/api-reference.md) - Complete API endpoint documentation
+- [Setup Guide](./docs/setup-guide.md) - Alternative setup reference
+- [SQLite Database Configuration](./docs/sqlite-config.md) - Database schema and configuration details
 
 ## Getting Started
 
-Follow these instructions to set up and run the project locally on your machine.
+Ready to get started? Follow our comprehensive installation guide to set up CryptoTrack on your local machine.
 
-### Prerequisites
+### Quick Prerequisites
 
-- Node.js (v18 or later recommended)
-- Git
+- **Node.js** v18 or later - [Download](https://nodejs.org/)
+- **Git** - [Download](https://git-scm.com/)
 
-### 1. Clone the Repository
+### Installation
 
-```bash
-git clone <REPO_CLONE_URL>
-cd <REPO_DIRECTORY>
-```
+For detailed setup instructions, see the **[INSTALLATION.md](./INSTALLATION.md)** guide which includes:
+- Step-by-step backend and frontend setup
+- Environment variable configuration
+- Database initialization details
+- Development commands
+- Troubleshooting guide
 
-### 2. Database Initialization
+**Quick Start:** Clone the repository, run `npm install` in both `Server/` and `Client/` directories, create `.env` files, and start both servers with `npm run dev`.
 
-The SQLite database is automatically initialized on the first server startup. All required tables (`users`, `watchlist`, `portfolio`, and `alerts`) are created automatically with proper schema and constraints.
+### Important Notes
 
-### 3. Backend Setup
-
-Navigate to the server directory and install dependencies.
-
-```bash
-cd Server
-npm install
-```
-
-#### Environment Variables
-
-Create a `.env` file in the `Server` directory and add the following:
-
-```env
-DB_PATH="./data.sqlite"
-PORT=3000
-CLIENT="http://localhost:5173"
-JWT_SECRET="your-jwt-secret"
-```
-
-#### Run the Backend Server
-
-```bash
-npm run dev
-```
-
-The server will start at **http://localhost:3000**.
-
-### 4. Frontend Setup
-
-In a new terminal, navigate to the client directory and install dependencies.
-
-```bash
-# From the root CryptoTrack directory
-cd Client
-npm install
-```
-
-#### Environment Variables
-
-Create a `.env` file in the `Client` directory and add the following:
-
-```env
-VITE_API_URL="http://localhost:3000"
-```
-
-#### Run the Frontend
-
-```bash
-npm run dev
-```
-
-The application should now be running at **http://localhost:5173**.
-
-### 5. Run Minimal Test Cases
-
-From the project root, run:
-
-```bash
-cd Client
-npm install
-npm test -- --runInBand
-```
-
-Optional watch mode:
-
-```bash
-npm run test:watch
-```
+- **SQLite Database:** Automatically initialized on first server startup—no separate installation needed
+- **Backend:** http://localhost:3000
+- **Frontend:** http://localhost:5173
+- **Hot Reload:** Both servers support automatic restart on file changes
 
 ## Attributions
 

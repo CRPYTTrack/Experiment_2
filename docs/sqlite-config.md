@@ -2,7 +2,28 @@
 
 ## Overview
 
-CryptoTrack now uses **SQLite** (via `better-sqlite3`) as the embedded database, eliminating the need for external database services. The database file is automatically created and initialized on the first server startup.
+CryptoTrack uses **SQLite** (via `better-sqlite3`) as the embedded database, eliminating the need for external database services. The database file is automatically created and initialized on the first server startup.
+
+## Installation
+
+### ✅ No Separate Installation Needed
+
+SQLite is **automatically installed** when you run `npm install` in the Server directory. The `better-sqlite3` npm package includes everything needed:
+
+```bash
+cd Server
+npm install
+# ✓ better-sqlite3 automatically installed
+# ✓ SQLite binaries included
+# ✓ No additional system-level installation required
+```
+
+### What Gets Installed?
+
+From your `Server/package.json`:
+- `better-sqlite3` - Node.js bindings for SQLite3
+- Includes pre-built SQLite3 binaries (cross-platform)
+- No need to install SQLite separately on Windows, macOS, or Linux
 
 ## Database File Location
 
